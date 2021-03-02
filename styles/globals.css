@@ -14,3 +14,7 @@ a {
 * {
   box-sizing: border-box;
 }
+body{
+    max-height: 100px;
+}
+

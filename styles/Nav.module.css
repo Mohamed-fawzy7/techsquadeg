@@ -1,0 +1,35 @@
+@media(max-width: 450px){
+    .search-form{
+        display: none !important;
+    }
+}
+
+@media(min-width: 768px){
+    .search-form{
+        display: none !important;
+    }
+}
+
+
+a.login, a.register{
+    border: 1px solid;
+    border-radius: 20px;
+    padding: 5px 20px !important;
+    text-transform: uppercase;
+}
+
+a.login{
+    color: #FFF !important;
+}
+
+a.register{
+    color: #28a745 !important;
+    background-color: #FFF;
+
+}
+
+@media(min-width: 768px){
+    a.login{
+        margin-right: 3rem;
+    }
+}

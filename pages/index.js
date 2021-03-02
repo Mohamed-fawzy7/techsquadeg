@@ -1,65 +1,72 @@
 import Head from 'next/head'
+import { useEffect, useState } from 'react';
+import New from '../components/New'
 import styles from '../styles/Home.module.css'
 
-export default function Home() {
-  return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+export default function Home({newsData}) {
+    const [news, setNews] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
 
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
+    function isScrolledToBottom(){
+        const element = document.querySelector('#scrolling');
+        
+        // check if the element is at the bottom or nearby by 200px max
+        if (element.scrollHeight <= element.scrollTop + element.offsetHeight + 200){
+            return true
+        }
+        return false;
+    }
+    
+    async function handleScroll(){
+        if(loading === false && isScrolledToBottom()){
+                console.log("hello");
+                setLoading(()=> true);
+                const res = await fetch(`http://80.240.21.204:1337/news?skip=${page * 10}&limit=10`);
+                const newsData = await res.json();
+                setNews(oldNews => [...oldNews, ...newsData.news])
+                setLoading(()=> false);
+                let newPage = page + 1;
+                setPage(newPage);
+            }
+    }
 
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+    useEffect(() => {
+        if(newsData.news){
+            setNews(newsData.news);
+        }    
+        window.loading = false;
+        document.getElementById("scrolling").addEventListener("scroll", handleScroll);
+        return () => document.getElementById("scrolling").removeEventListener("scroll", handleScroll)
+    }, []);
+    console.log(news);
+    return (
+        <>
+        <Head>
+            <title>News Task</title>
+        </Head>
+        <div className="home">
+            <div className="container">
+                <div className="row">
+                    <div className="col">Fixed left</div>
+                    <div className="col-md-6">
+                        <div className={styles.center} id="scrolling">
+                            {news.map((singleNew, i) => <New key={i} singleNew={singleNew} />)}
+                        </div>
+                    </div>
+                    <div className="col-md-3">Fixed right</div>
+                </div>
+            </div>
         </div>
-      </main>
+        </>
+    )
+}
 
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
+export const getServerSideProps = async (context) => {
+    console.log(context);
+    const res = await fetch('http://80.240.21.204:1337/news?skip=12&limit=10');
+    const newsData = await res.json();
+    return {props: {newsData}}
 }
