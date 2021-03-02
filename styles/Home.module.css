@@ -1,7 +1,16 @@
 .center{
-    max-height: calc(100vh - 60px);
+    max-height: calc(100vh - 56px);
     overflow: auto;
     background-color: #DDD;
     padding-right: 25px;;
     padding-left: 25px;
+}
+
+@media (max-width: 767px){
+    .center{
+        max-height: calc(100vh - 70px);
+    }
+    .left, .right{
+        display: none;
+    }
 }

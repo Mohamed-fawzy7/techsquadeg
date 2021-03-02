@@ -10,6 +10,27 @@ export default function Home({newsData}) {
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(1);
 
+    useEffect(() => {
+        if(newsData.news){
+            setNews(newsData.news);
+        }    
+        window.isFetchingData = false;
+        document.getElementById("scrolling").addEventListener("scroll", handleScroll);
+        return () => document.getElementById("scrolling").removeEventListener("scroll", handleScroll)
+    }, []);
+
+    async function handleScroll(){
+        if(window.isFetchingData === false && isScrolledToBottom()){
+                window.isFetchingData = true;
+                const res = await fetch(`http://80.240.21.204:1337/news?skip=${page * 10}&limit=10`);
+                const newsData = await res.json();
+                setNews(oldNews => [...oldNews, ...newsData.news])
+                window.isFetchingData = false;
+                let newPage = page + 1;
+                setPage(newPage);
+            }
+    }
+    
     function isScrolledToBottom(){
         const element = document.querySelector('#scrolling');
         
@@ -20,28 +41,6 @@ export default function Home({newsData}) {
         return false;
     }
     
-    async function handleScroll(){
-        if(loading === false && isScrolledToBottom()){
-                console.log("hello");
-                setLoading(()=> true);
-                const res = await fetch(`http://80.240.21.204:1337/news?skip=${page * 10}&limit=10`);
-                const newsData = await res.json();
-                setNews(oldNews => [...oldNews, ...newsData.news])
-                setLoading(()=> false);
-                let newPage = page + 1;
-                setPage(newPage);
-            }
-    }
-
-    useEffect(() => {
-        if(newsData.news){
-            setNews(newsData.news);
-        }    
-        window.loading = false;
-        document.getElementById("scrolling").addEventListener("scroll", handleScroll);
-        return () => document.getElementById("scrolling").removeEventListener("scroll", handleScroll)
-    }, []);
-    console.log(news);
     return (
         <>
         <Head>
@@ -50,13 +49,13 @@ export default function Home({newsData}) {
         <div className="home">
             <div className="container">
                 <div className="row">
-                    <div className="col">Fixed left</div>
+                    <div className={`col-md-3 ${styles.left}`}>Fixed left</div>
                     <div className="col-md-6">
                         <div className={styles.center} id="scrolling">
                             {news.map((singleNew, i) => <New key={i} singleNew={singleNew} />)}
                         </div>
                     </div>
-                    <div className="col-md-3">Fixed right</div>
+                    <div className={`col-md-3 ${styles.right}`}>Fixed right</div>
                 </div>
             </div>
         </div>
@@ -65,7 +64,6 @@ export default function Home({newsData}) {
 }
 
 export const getServerSideProps = async (context) => {
-    console.log(context);
     const res = await fetch('http://80.240.21.204:1337/news?skip=12&limit=10');
     const newsData = await res.json();
     return {props: {newsData}}
